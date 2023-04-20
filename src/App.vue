@@ -11,11 +11,11 @@
       </div>
       <div class="calendarBody">
         <div v-for="(day, i) in visibleDayOfThisMonth" :key="i" :class="day.color" @click="openAddScheduleModal(day)">{{ day.day }}
-        <div v-for="event in day.events" :style="`background: ${eventBoxColor}`">{{ event }}</div>
+        <div v-for="event in day.events" :style="`background: ${day.boxColor}`">{{ event }}</div>
         </div>
       </div>
     </div>
-    <AddScheduleModal :key="addScheduleModalKey" :box-color="eventBoxColor" :isModal="isAddScheduleModal" :pick-date="pickDate" @closeAddScheduleModal="closeAddScheduleModal" @clickFinish="clickFinish"/>
+    <AddScheduleModal :key="addScheduleModalKey" :isModal="isAddScheduleModal" :pick-date="pickDate" @closeAddScheduleModal="closeAddScheduleModal" @clickFinish="clickFinish"/>
     </div>
 
 </template>
@@ -42,7 +42,6 @@ export default {
       isAddScheduleModal: false,
       pickDate:'',
       addScheduleModalKey:0,
-      eventBoxColor:'#FFF'
     }
   },
   methods:{
@@ -77,9 +76,8 @@ export default {
       this.addScheduleModalKey += 1
     },
     clickFinish(boxColor,scheduleData){
-      this.eventBoxColor = boxColor;
       const index = this.visibleDayOfThisMonth.findIndex((x)=> x.fullDate === scheduleData.date)
-      this.$set(this.visibleDayOfThisMonth, index, {...this.visibleDayOfThisMonth[index],events:[scheduleData.setTime + ' ' + scheduleData.todo]})
+      this.$set(this.visibleDayOfThisMonth, index, {...this.visibleDayOfThisMonth[index],events:[scheduleData.setTime + ' ' + scheduleData.todo],boxColor:boxColor})
     }
   }
 }
