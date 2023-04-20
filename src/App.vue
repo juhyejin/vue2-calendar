@@ -1,0 +1,129 @@
+<template>
+  <div id="app">
+    <div class="calendar">
+      <div class="calendarHeader">
+        <div>
+          {{ visibleYear }}년 {{visibleMonth}}월
+        </div>
+        <div class="calendarWeek">
+          <div v-for="week in weeks" :key="week" class="weekStyle">{{week}}</div>
+        </div>
+      </div>
+      <div class="calendarBody">
+        <div v-for="(day, i) in visibleDayOfThisMonth" :key="i" :class="day.color" @click="openAddScheduleModal(day)">{{ day.day }}
+        <div v-for="event in day.events" :style="`background: ${eventBoxColor}`">{{ event }}</div>
+        </div>
+      </div>
+    </div>
+    <AddScheduleModal :key="addScheduleModalKey" :box-color="eventBoxColor" :isModal="isAddScheduleModal" :pick-date="pickDate" @closeAddScheduleModal="closeAddScheduleModal" @clickFinish="clickFinish"/>
+    </div>
+
+</template>
+
+<script>
+import dayjs from 'dayjs'
+import AddScheduleModal from "@/components/AddScheduleModal.vue";
+
+export default {
+  mounted() {
+    this.createCalendar()
+  },
+  components: {
+    AddScheduleModal
+  },
+  data(){
+    return {
+      currentDay : dayjs(),
+      visibleDayOfThisMonth:[],
+      weeks : ['일','월','화','수','목','금','토'],
+      visibleYear : 2022,
+      visibleMonth : 4,
+      lastWeekdayOfThisMonth : 0,
+      isAddScheduleModal: false,
+      pickDate:'',
+      addScheduleModalKey:0,
+      eventBoxColor:'#FFF'
+    }
+  },
+  methods:{
+    createCalendar: function (){
+      this.visibleYear = this.currentDay.year();
+      this.visibleMonth = this.currentDay.month() + 1;
+      const dayOfThisMonth = dayjs(this.dateToString(this.visibleYear, this.visibleMonth, 1)).get('d')
+      const dayOfLastMonth = dayjs(this.dateToString(this.visibleYear, this.visibleMonth,1)).add(-(dayOfThisMonth),'day').get('date')
+      this.lastWeekdayOfThisMonth = this.currentDay.daysInMonth();
+      this.getNConsecutiveNumbersFromStart(this.visibleYear+'-'+(this.visibleMonth-1), dayOfLastMonth,dayOfLastMonth+dayOfThisMonth-1,'grey')
+      this.getNConsecutiveNumbersFromStart(this.visibleYear+'-'+this.visibleMonth, 1, this.lastWeekdayOfThisMonth );
+      const remainingArrayLength = 42 - this.visibleDayOfThisMonth.length
+      const dayOfNextMonth = dayjs(this.dateToString(this.visibleYear,this.visibleMonth,this.lastWeekdayOfThisMonth))
+          .add(remainingArrayLength,'day')
+          .get('date');
+      this.getNConsecutiveNumbersFromStart(this.visibleYear+'-'+(this.visibleMonth+1),1, dayOfNextMonth,'grey')
+    },
+    dateToString : function (year,month,day){
+      return `${year}-${month}-${day}`
+    },
+    getNConsecutiveNumbersFromStart: function(yearMonth,startDay, endDay,fontColor){
+      for(let i = startDay; i<=endDay;i++){
+        this.visibleDayOfThisMonth.push({fullDate : `${yearMonth}-${i}`, day: i, color:fontColor})
+      }
+    },
+    openAddScheduleModal: function(pickDay){
+      this.pickDate = pickDay.fullDate
+      this.isAddScheduleModal = true
+    },
+    closeAddScheduleModal(val){
+      this.isAddScheduleModal = val;
+      this.addScheduleModalKey += 1
+    },
+    clickFinish(boxColor,scheduleData){
+      this.eventBoxColor = boxColor;
+      const index = this.visibleDayOfThisMonth.findIndex((x)=> x.fullDate === scheduleData.date)
+      this.$set(this.visibleDayOfThisMonth, index, {...this.visibleDayOfThisMonth[index],events:[scheduleData.setTime + ' ' + scheduleData.todo]})
+    }
+  }
+}
+</script>
+
+<style scoped>
+.calendar{
+  height: 80vh;
+  max-width: 80%;
+  margin: auto;
+  font-size: 12px;
+  color: #3c3c3c;
+}
+.calendarHeader{
+  text-align: center;
+}
+.calendarWeek{
+  display: grid;
+  grid-template-columns: repeat(7 , 1fr);
+}
+.calendarWeek{
+  border-top: 1px solid;
+}
+.calendarWeek,
+.calendarBody{
+  display: grid;
+  grid-template-columns: repeat(7 , 1fr);
+  text-align: center;
+  border-left: 1px solid;
+  border-color: #D9D9D9;
+}
+.calendarBody{
+  height: 100%;
+  grid-auto-rows: 1fr;
+}
+.calendarWeek > div,.calendarBody > div{
+  border-bottom: 1px solid;
+  border-right: 1px solid;
+  border-color: #D9D9D9;
+}
+.grey{
+  color: #959595;
+}
+.box-color{
+  background: #3c3c3c;
+}
+</style>
