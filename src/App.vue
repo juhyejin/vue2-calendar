@@ -11,7 +11,7 @@
       </div>
       <div class="calendarBody">
         <div v-for="(day, i) in visibleDayOfThisMonth" :key="i" :class="day.color" @click="openAddScheduleModal(day)">{{ day.day }}
-        <div v-for="event in day.events" :style="`background: ${day.boxColor}`">{{ event }}</div>
+        <div v-for="event in day.events" :style="`background: ${event.boxColor}`">{{ event.toDo }}</div>
         </div>
       </div>
     </div>
@@ -64,7 +64,7 @@ export default {
     },
     getNConsecutiveNumbersFromStart: function(yearMonth,startDay, endDay,fontColor){
       for(let i = startDay; i<=endDay;i++){
-        this.visibleDayOfThisMonth.push({fullDate : `${yearMonth}-${i}`, day: i, color:fontColor})
+        this.visibleDayOfThisMonth.push({fullDate : `${yearMonth}-${i}`, day: i, color:fontColor,events:[]})
       }
     },
     openAddScheduleModal: function(pickDay){
@@ -77,7 +77,7 @@ export default {
     },
     clickFinish(boxColor,scheduleData){
       const index = this.visibleDayOfThisMonth.findIndex((x)=> x.fullDate === scheduleData.date)
-      this.$set(this.visibleDayOfThisMonth, index, {...this.visibleDayOfThisMonth[index],events:[scheduleData.setTime + ' ' + scheduleData.todo],boxColor:boxColor})
+      this.visibleDayOfThisMonth[index].events.push({toDo : scheduleData.setTime + ' ' + scheduleData.todo, boxColor: boxColor})
     }
   }
 }
