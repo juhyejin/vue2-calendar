@@ -2,9 +2,18 @@
   <div id="app">
     <div class="calendar">
       <div class="calendarHeader">
-        <div>
-          {{ visibleYear }}년 {{visibleMonth}}월
+        <div class="calendarHeader-title">
+          <button type="button" @click="handleMonth(-1)">
+            이전달
+          </button>
+          <div>
+            {{ visibleYear }}년 {{visibleMonth}}월
+          </div>
+          <button type="button" @click="handleMonth(1)">
+            다음달
+          </button>
         </div>
+
         <div class="calendarWeek">
           <div v-for="week in weeks" :key="week" class="weekStyle">{{week}}</div>
         </div>
@@ -44,7 +53,16 @@ export default {
       addScheduleModalKey:0,
     }
   },
+  watch:{
+    currentDay: function (){
+      this.resetDayArray()
+      this.createCalendar()
+    }
+  },
   methods:{
+    resetDayArray: function (){
+      this.visibleDayOfThisMonth=[]
+    },
     createCalendar: function (){
       this.visibleYear = this.currentDay.year();
       this.visibleMonth = this.currentDay.month() + 1;
@@ -71,13 +89,16 @@ export default {
       this.pickDate = pickDay.fullDate
       this.isAddScheduleModal = true
     },
-    closeAddScheduleModal(val){
+    closeAddScheduleModal: function(val){
       this.isAddScheduleModal = val;
       this.addScheduleModalKey += 1
     },
-    clickFinish(boxColor,scheduleData){
+    clickFinish: function(boxColor,scheduleData){
       const index = this.visibleDayOfThisMonth.findIndex((x)=> x.fullDate === scheduleData.date)
       this.visibleDayOfThisMonth[index].events.push({toDo : scheduleData.setTime + ' ' + scheduleData.todo, boxColor: boxColor})
+    },
+    handleMonth: function(val){
+      this.currentDay = dayjs(this.dateToString(this.visibleYear, this.visibleMonth,1)).add(val,'month')
     }
   }
 }
@@ -87,12 +108,20 @@ export default {
 .calendar{
   height: 80vh;
   max-width: 80%;
-  margin: auto;
+  margin: 20px auto;
   font-size: 12px;
   color: #3c3c3c;
 }
 .calendarHeader{
   text-align: center;
+  /*display: flex;*/
+}
+.calendarHeader-title{
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  gap: 20px;
+  margin-bottom: 20px;
 }
 .calendarWeek{
   display: grid;
